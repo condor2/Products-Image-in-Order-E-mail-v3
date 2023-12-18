@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>Products Image in Customer Order E-mail 3.0</name>
+	<version>3.0</version>
+	<code>products_image_in_customer_order_email_v3</code>
+	<link>https://www.free-time-info.ro</link>
+	<author>xxvirusxx</author>
+
+	<file path="catalog/controller/mail/order.php">
+		<operation>
+			<search><![CDATA[$data['text_shipping_address'] = $language->get('text_shipping_address');]]></search>
+			<add position="after"><![CDATA[
+		$data['text_image'] = $language->get('text_image');
+			]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$this->load->model('tool/upload');]]></search>
+			<add position="after"><![CDATA[
+		$this->load->model('tool/image');
+		$this->load->model('catalog/product');
+			]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$data['products'][] = array(]]></search>
+			<add position="before"><![CDATA[
+			$product_info = $this->model_catalog_product->getProduct($order_product['product_id']);
+
+			if ($product_info['image']) {
+				$image = $this->model_tool_image->resize($product_info['image'], 60, 60);
+			} else {
+				$image = $this->model_tool_image->resize('placeholder.png', 60, 60);
+			}
+
+			$url = $this->url->link('product/product', 'product_id=' . $order_product['product_id']);
+			]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA['name'     => $order_product['name'],]]></search>
+			<add position="before"><![CDATA[
+				'thumb'    => $image,
+				'href'     => $url,
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/mail/order_add.twig">
+		<operation>
+			<search><![CDATA[<td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;">{{ text_product }}</td>]]></search>
+			<add position="before"><![CDATA[
+        <td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; background-color: #EFEFEF; font-weight: bold; text-align: left; padding: 7px; color: #222222;">{{ text_image }}</td>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: left; padding: 7px;">{{ product.name }}]]></search>
+			<add position="before"><![CDATA[
+      <td style="font-size: 12px; border-right: 1px solid #DDDDDD; border-bottom: 1px solid #DDDDDD; text-align: center; padding: 7px;"><a href="{{ product.href }}"><img src="{{ product.thumb }}" title="{{ product.name }}"></a></td>
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[colspan="4"]]></search>
+			<add position="replace"><![CDATA[colspan="5"]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/language/en-gb/mail/order_add.php">
+		<operation>
+			<search><![CDATA[$_['text_product']]]></search>
+			<add position="before"><![CDATA[
+$_['text_image']            = 'Image';
+			]]></add>
+		</operation>
+	</file>
+</modification>
